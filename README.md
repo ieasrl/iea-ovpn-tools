@@ -64,6 +64,29 @@ Script que automatiza todo el proceso de alta de un usuario VPN: crea el PPP sec
 3. Exporta la CA pública del router una sola vez (se reutiliza para todos los usuarios siguientes, no hace falta repetirlo).
 4. Arma el `.ovpn` final embebiendo la CA, el certificado, la key y las credenciales — mismo formato que los perfiles que ya veníamos usando (incluye las rutas fijas y el DNS interno ya configurados).
 
+## Crear un PPP profile para un sector nuevo
+
+`new-ppp-profile.ps1` crea el pool de IPs y el PPP profile de un sector, con la misma convención que los existentes:
+
+| Qué | Valor |
+|---|---|
+| Pool | `pool-vpn-<sector>`, rango `172.20.X.10-172.20.X.100` |
+| Profile | `vpn-profile-<sector>`, `local-address=172.20.X.1`, `remote-address=pool-vpn-<sector>` |
+| DNS / WINS | `10.0.1.3` |
+| Encryption | `required` |
+
+Si no se indica `-Octet`, elige el primer `172.20.X` que no esté usado por ningún pool, profile o dirección IP del router. Antes de aplicar muestra el plan y pide confirmación.
+
+```powershell
+# Ver qué haría, sin tocar nada
+powershell -ExecutionPolicy Bypass -File .\new-ppp-profile.ps1 -Name comercial -DryRun
+
+# Crearlo (pide confirmación; -Yes para no preguntar, -Octet N para forzar la subred)
+powershell -ExecutionPolicy Bypass -File .\new-ppp-profile.ps1 -Name comercial
+```
+
+No crea reglas de firewall. Los `.ovpn` ya enrutan `172.20.0.0/16`, así que no hace falta cambiar nada del lado del cliente.
+
 ## Problemas comunes
 
 | Error | Causa / solución |
